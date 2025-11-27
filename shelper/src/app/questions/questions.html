@@ -1,0 +1,132 @@
+<mat-toolbar class="top-toolbar">
+  <button mat-icon-button (click)="onBack()">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span class="toolbar-title">Questões</span>
+</mat-toolbar>
+
+<div class="questions-container">
+  <div class="content-wrapper">
+    <!-- Controls Section -->
+    <div class="controls-section">
+      <mat-checkbox [(ngModel)]="showTags" color="primary">
+        <span class="checkbox-label">Mostrar Tags</span>
+      </mat-checkbox>
+    </div>
+
+    <!-- Questions List -->
+    <div class="questions-list">
+      <mat-card
+        *ngFor="let question of questions; let i = index"
+        class="question-card"
+        [class.correct]="question.submitted && question.isCorrect"
+        [class.incorrect]="question.submitted && !question.isCorrect">
+
+        <mat-card-header>
+          <div class="question-header">
+            <div class="question-type">
+              <mat-icon>{{ getQuestionIcon(question.type) }}</mat-icon>
+              <span>{{ getQuestionTypeLabel(question.type) }}</span>
+            </div>
+            <span class="question-number">Questão {{ i + 1 }}</span>
+          </div>
+        </mat-card-header>
+
+        <mat-card-content>
+          <!-- Tags -->
+          <div class="tags-section" *ngIf="showTags">
+            <mat-chip-set>
+              <mat-chip *ngFor="let tag of getTags(question)">
+                {{ tag }}
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+
+          <!-- Question Text -->
+          <h3 class="question-text">{{ question.question }}</h3>
+
+          <!-- Multiple Choice -->
+          <div *ngIf="question.type === QuestionType.MULTIPLE_CHOICE" class="answer-section">
+            <mat-radio-group [(ngModel)]="question.userAnswer" [disabled]="question.submitted">
+              <mat-radio-button
+                *ngFor="let option of getOptions(question); let idx = index"
+                [value]="getOptionLetter(idx)"
+                class="option">
+                <span class="option-label">{{ getOptionLetter(idx) }}.</span>
+                {{ option }}
+              </mat-radio-button>
+            </mat-radio-group>
+          </div>
+
+          <!-- True/False -->
+          <div *ngIf="question.type === QuestionType.TRUE_FALSE" class="answer-section">
+            <mat-radio-group [(ngModel)]="question.userAnswer" [disabled]="question.submitted">
+              <mat-radio-button [value]="true" class="option">
+                <span class="option-label">✓</span> Verdadeiro
+              </mat-radio-button>
+
+              <mat-radio-button [value]="false" class="option">
+                <span class="option-label">✗</span> Falso
+              </mat-radio-button>
+            </mat-radio-group>
+
+          </div>
+
+          <!-- Short Answer -->
+          <div *ngIf="question.type === QuestionType.SHORT_ANSWER" class="answer-section">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Sua resposta</mat-label>
+              <textarea
+                matInput
+                [(ngModel)]="question.userAnswer"
+                [disabled]="question.submitted"
+                rows="3"
+                placeholder="Digite sua resposta aqui..."></textarea>
+            </mat-form-field>
+          </div>
+
+          <!-- Fill in the Blank -->
+          <div *ngIf="question.type === QuestionType.FILL_IN_THE_BLANK" class="answer-section">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Preencha a lacuna</mat-label>
+              <input
+                matInput
+                [(ngModel)]="question.userAnswer"
+                [disabled]="question.submitted"
+                placeholder="Digite a palavra ou frase que falta">
+            </mat-form-field>
+          </div>
+
+          <!-- Feedback -->
+          <div *ngIf="question.submitted" class="feedback-section">
+            <div class="feedback-message" [class.correct]="question.isCorrect" [class.incorrect]="!question.isCorrect">
+              <mat-icon>{{ question.isCorrect ? 'check_circle' : 'cancel' }}</mat-icon>
+              <span *ngIf="question.isCorrect">Correto! Muito bem!</span>
+              <span *ngIf="!question.isCorrect">
+                Incorreto. A resposta correta é: <strong>{{ question.expectedAnswer }}</strong>
+              </span>
+            </div>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="onSubmitQuestion(question)"
+            [disabled]="question.submitted">
+            <mat-icon>{{ question.submitted ? 'check' : 'send' }}</mat-icon>
+            {{ question.submitted ? 'Enviado' : 'Enviar Resposta' }}
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="questions.length === 0">
+      <mat-icon>quiz</mat-icon>
+      <h2>Nenhuma Questão Disponível</h2>
+      <p>As questões aparecerão aqui assim que forem geradas para este studyflow.</p>
+    </div>
+  </div>
+</div>

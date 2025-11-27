@@ -1,0 +1,137 @@
+<mat-toolbar class="top-toolbar">
+  <button mat-icon-button (click)="onBack()">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span class="toolbar-title">{{ studyflow?.title || 'Loading...' }}</span>
+</mat-toolbar>
+
+<div class="detail-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-icon>hourglass_empty</mat-icon>
+    <p>Carregando studyflow...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadStudyflow()">
+      Tentar Novamente
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="content-wrapper" *ngIf="studyflow && !loading">
+    <!-- Header Section -->
+    <mat-card class="header-card">
+      <mat-card-header>
+        <mat-card-title>{{ studyflow.title }}</mat-card-title>
+        <mat-card-subtitle>
+          <span class="status-badge" *ngIf="studyflow.status">{{ studyflow.status }}</span>
+          <span class="created-date">
+            <mat-icon>schedule</mat-icon>
+            Criado em {{ studyflow.creationDate | date: 'd \'de\' MMMM \'de\' y' }}
+          </span>
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <p class="description">{{ studyflow.description }}</p>
+
+        <div class="tags-section">
+          <h3>Tópicos</h3>
+          <mat-chip-set>
+            <mat-chip *ngFor="let tag of studyflow.mainTags">
+              {{ tag }}
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button mat-raised-button color="primary" (click)="onGenerateOverview()">
+        <mat-icon>summarize</mat-icon>
+        Gerar Resumo
+      </button>
+      <button mat-raised-button color="primary" (click)="onGenerateQuestions()">
+        <mat-icon>quiz</mat-icon>
+        Responder questões
+      </button>
+      <button mat-raised-button color="accent" (click)="onViewAnsweredQuestions()">
+        <mat-icon>check_circle</mat-icon>
+        Ver Questões Respondidas
+      </button>
+      <button mat-raised-button (click)="onViewStatus()">
+        <mat-icon>info</mat-icon>
+        Status
+      </button>
+    </div>
+
+    <!-- Resources Section -->
+    <mat-card class="resources-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>folder_open</mat-icon>
+          Recursos
+        </mat-card-title>
+        <mat-card-subtitle>
+          {{ studyflow.resources.length }} arquivo(s) carregado(s)
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="resources-list" *ngIf="studyflow.resources.length > 0">
+          <div
+            *ngFor="let resource of studyflow.resources"
+            class="resource-item"
+            [class.indicator-resource]="resource.indicator">
+            <div class="resource-icon" [style.color]="getFileColor(resource.filename)">
+              <mat-icon>{{ getFileIcon(resource.filename) }}</mat-icon>
+            </div>
+
+            <div class="resource-info">
+              <div class="resource-header">
+                <span class="resource-name">{{ resource.filename }}</span>
+                <span class="indicator-badge" *ngIf="resource.indicator">
+                  <mat-icon>star</mat-icon>
+                  Indicador
+                </span>
+              </div>
+              <div class="resource-meta">
+                <span class="file-type">{{ getFileType(resource.filename) }}</span>
+                <span class="separator">•</span>
+                <span class="mime-type">{{ resource.mime }}</span>
+              </div>
+            </div>
+
+            <div class="resource-actions">
+              <button
+                mat-icon-button
+                matTooltip="Baixar">
+                <mat-icon>download</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="warn"
+                matTooltip="Excluir">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-resources" *ngIf="studyflow.resources.length === 0">
+          <mat-icon>cloud_upload</mat-icon>
+          <p>Nenhum recurso carregado ainda</p>
+          <button mat-raised-button color="primary" (click)="onAddResource()">
+            <mat-icon>add</mat-icon>
+            Carregar Primeiro Recurso
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

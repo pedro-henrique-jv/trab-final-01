@@ -1,0 +1,167 @@
+<mat-toolbar class="top-toolbar">
+  <button mat-icon-button (click)="onBack()">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span class="toolbar-title">Revisar Questões</span>
+</mat-toolbar>
+
+<div class="questions-container">
+  <div class="content-wrapper">
+    <!-- Controls Section -->
+    <div class="controls-section">
+      <mat-checkbox [(ngModel)]="showTags" color="primary">
+        <span class="checkbox-label">Mostrar Tags</span>
+      </mat-checkbox>
+    </div>
+
+    <!-- Questions List -->
+    <div class="questions-list">
+      <mat-card
+        *ngFor="let question of questions; let i = index"
+        class="question-card"
+        [class.correct]="question.isCorrect"
+        [class.incorrect]="!question.isCorrect">
+
+        <mat-card-header>
+          <div class="question-header">
+            <div class="question-type">
+              <mat-icon>{{ getQuestionIcon(question.type) }}</mat-icon>
+              <span>{{ getQuestionTypeLabel(question.type) }}</span>
+            </div>
+            <div class="header-right">
+              <span class="question-number">Questão {{ i + 1 }}</span>
+              <mat-icon class="result-badge" *ngIf="question.isCorrect">check_circle</mat-icon>
+              <mat-icon class="result-badge incorrect" *ngIf="!question.isCorrect">cancel</mat-icon>
+            </div>
+          </div>
+        </mat-card-header>
+
+        <mat-card-content>
+          <!-- Tags -->
+          <div class="tags-section" *ngIf="showTags">
+            <mat-chip-set>
+              <mat-chip *ngFor="let tag of getTags(question)">
+                {{ tag }}
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+
+          <!-- Question Text -->
+          <h3 class="question-text">{{ question.question }}</h3>
+
+          <!-- Multiple Choice -->
+          <div *ngIf="question.type === QuestionType.MULTIPLE_CHOICE" class="answer-section">
+            <div *ngFor="let option of getOptions(question); let idx = index"
+                 class="option-review"
+                 [class.user-answer]="isUserAnswer(question, option, idx) && !question.isCorrect"
+                 [class.correct-answer]="isCorrectAnswer(question, option)">
+              <div class="option-content">
+                <span class="option-label">{{ getOptionLetter(idx) }}.</span>
+                <span class="option-text">{{ option }}</span>
+              </div>
+              <div class="option-icons">
+                <!-- Mostra check verde se for a resposta correta -->
+                <mat-icon *ngIf="isCorrectAnswer(question, option)" class="correct-icon">
+                  check_circle
+                </mat-icon>
+                <!-- Mostra X vermelho se foi a resposta do usuário e está errada -->
+                <mat-icon *ngIf="isUserAnswer(question, option, idx) && !question.isCorrect" class="incorrect-icon">
+                  cancel
+                </mat-icon>
+              </div>
+            </div>
+          </div>
+
+          <!-- True/False -->
+          <div *ngIf="question.type === QuestionType.TRUE_FALSE" class="answer-section">
+            <div class="option-review"
+                 [class.user-answer]="isTrueFalseUserAnswer(question, true) && !question.isCorrect"
+                 [class.correct-answer]="isTrueFalseCorrect(question, true)">
+              <div class="option-content">
+                <span class="option-label">✓</span>
+                <span class="option-text">Verdadeiro</span>
+              </div>
+              <div class="option-icons">
+                <mat-icon *ngIf="isTrueFalseCorrect(question, true)" class="correct-icon">
+                  check_circle
+                </mat-icon>
+                <mat-icon *ngIf="isTrueFalseUserAnswer(question, true) && !question.isCorrect" class="incorrect-icon">
+                  cancel
+                </mat-icon>
+              </div>
+            </div>
+
+            <div class="option-review"
+                 [class.user-answer]="isTrueFalseUserAnswer(question, false) && !question.isCorrect"
+                 [class.correct-answer]="isTrueFalseCorrect(question, false)">
+              <div class="option-content">
+                <span class="option-label">✗</span>
+                <span class="option-text">Falso</span>
+              </div>
+              <div class="option-icons">
+                <mat-icon *ngIf="isTrueFalseCorrect(question, false)" class="correct-icon">
+                  check_circle
+                </mat-icon>
+                <mat-icon *ngIf="isTrueFalseUserAnswer(question, false) && !question.isCorrect" class="incorrect-icon">
+                  cancel
+                </mat-icon>
+              </div>
+            </div>
+          </div>
+
+          <!-- Short Answer -->
+          <div *ngIf="question.type === QuestionType.SHORT_ANSWER" class="answer-section text-answer">
+            <div class="answer-box" [class.incorrect]="!question.isCorrect">
+              <div class="answer-label">Sua resposta:</div>
+              <div class="answer-text">{{ question.userAnswer }}</div>
+            </div>
+
+            <div class="answer-box correct" *ngIf="!question.isCorrect">
+              <div class="answer-label">Resposta correta:</div>
+              <div class="answer-text">{{ question.expectedAnswer }}</div>
+            </div>
+          </div>
+
+          <!-- Fill in the Blank -->
+          <div *ngIf="question.type === QuestionType.FILL_IN_THE_BLANK" class="answer-section text-answer">
+            <div class="answer-box" [class.incorrect]="!question.isCorrect">
+              <div class="answer-label">Sua resposta:</div>
+              <div class="answer-text">{{ question.userAnswer }}</div>
+            </div>
+
+            <div class="answer-box correct" *ngIf="!question.isCorrect">
+              <div class="answer-label">Resposta correta:</div>
+              <div class="answer-text">{{ question.expectedAnswer }}</div>
+            </div>
+          </div>
+
+          <!-- Result Summary -->
+          <div class="result-summary">
+            <div class="result-message" [class.correct]="question.isCorrect" [class.incorrect]="!question.isCorrect">
+              <mat-icon>{{ question.isCorrect ? 'check_circle' : 'cancel' }}</mat-icon>
+              <span *ngIf="question.isCorrect">Você acertou esta questão!</span>
+              <span *ngIf="!question.isCorrect">Você errou esta questão</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && questions.length === 0">
+      <mat-icon>quiz</mat-icon>
+      <h2>Nenhuma Questão Respondida</h2>
+      <p>Você ainda não respondeu nenhuma questão deste studyflow.</p>
+      <button mat-raised-button color="primary" (click)="onBack()">
+        <mat-icon>arrow_back</mat-icon>
+        Voltar para Home
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+      <mat-icon class="loading-icon">hourglass_empty</mat-icon>
+      <h2>Carregando questões...</h2>
+    </div>
+  </div>
+</div>d
