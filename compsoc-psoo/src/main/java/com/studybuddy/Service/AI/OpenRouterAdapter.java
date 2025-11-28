@@ -20,6 +20,9 @@ import java.util.stream.Collectors;
 @Component
 public class OpenRouterAdapter implements AiChatClient {
     private static final Logger log = LoggerFactory.getLogger(OpenRouterAdapter.class);
+    
+    private static final String CHOICES_FIELD = "choices";
+    
     private static final String OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
     private static final int TIMEOUT_SECONDS = 120;
 
@@ -30,7 +33,9 @@ public class OpenRouterAdapter implements AiChatClient {
     public OpenRouterAdapter() {
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = new ObjectMapper();
+        
         this.apiKey = "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";
+                
         if (this.apiKey == null || this.apiKey.isBlank()) {
             throw new IllegalStateException("OPENROUTER_API_KEY environment variable is not set");
         }
@@ -94,12 +99,12 @@ public class OpenRouterAdapter implements AiChatClient {
         try {
             JsonNode root = objectMapper.readTree(responseBody);
 
-            if (!root.has("choices") || !root.path("choices").isArray() || root.path("choices").size() == 0) {
+            if (!root.has(CHOICES_FIELD) || !root.path(CHOICES_FIELD).isArray() || root.path(CHOICES_FIELD).size() == 0) {
                 log.error("Response missing choices array or array is empty");
                 throw new AiProviderException("Invalid response structure from OpenRouter");
             }
 
-            JsonNode firstChoice = root.path("choices").get(0);
+            JsonNode firstChoice = root.path(CHOICES_FIELD).get(0);
             JsonNode messageNode = firstChoice.path("message");
 
             String content = messageNode.path("content").asText("");

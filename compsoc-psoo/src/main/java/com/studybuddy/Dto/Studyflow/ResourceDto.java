@@ -9,7 +9,9 @@ public class ResourceDto {
     private UUID studyflowId;
     private boolean indicator;
 
-    public ResourceDto() {}
+    public ResourceDto() {
+        // Construtor vazio necessário para frameworks de serialização (como Jackson)
+    }
 
     public boolean isIndicator() {
         return indicator;

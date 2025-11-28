@@ -1,9 +1,6 @@
 package com.studybuddy.Service.Studyflow.Question;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.studybuddy.Entity.QuestionEntity;
-import com.studybuddy.Entity.QuestionType;
-import com.studybuddy.Entity.StudyflowEntity;
 import com.studybuddy.Exception.EntityNotFoundException;
 import com.studybuddy.Repository.Studyflow.QuestionEntityRepository;
 import com.studybuddy.Repository.Studyflow.StudyflowEntityRepository;
@@ -14,6 +11,10 @@ import com.studybuddy.Service.AI.Strategy.PromptStrategy;
 import com.studybuddy.Service.AI.Strategy.QuestionGenerationPromptStrategy;
 import com.studybuddy.Service.AI.Template.AbstractAiGenerationService;
 import com.studybuddy.Service.Extractor.ExtractTextFromResources;
+import com.studybuddy.entity.QuestionEntity;
+import com.studybuddy.entity.QuestionType;
+import com.studybuddy.entity.StudyflowEntity;
+
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,6 +24,9 @@ import java.util.UUID;
 @Service
 public class GenerateQuestionsServiceImpl extends AbstractAiGenerationService<List<QuestionEntity>> 
         implements GenerateQuestionsService {
+
+    private static final String ANSWERS_FIELD = "answers";
+    private static final String TAGS_FIELD = "tags";
 
     private final ExtractTextFromResources extractTextFromResources;
     private final StudyflowEntityRepository studyflowEntityRepository;
@@ -127,8 +131,8 @@ public class GenerateQuestionsServiceImpl extends AbstractAiGenerationService<Li
     private String parseAnswers(JsonNode questionNode) {
         List<String> answers = new ArrayList<>();
         
-        if (questionNode.has("answers") && questionNode.get("answers").isArray()) {
-            for (JsonNode answerNode : questionNode.get("answers")) {
+        if (questionNode.has(ANSWERS_FIELD) && questionNode.get(ANSWERS_FIELD).isArray()) {
+            for (JsonNode answerNode : questionNode.get(ANSWERS_FIELD)) {
                 answers.add(answerNode.asText());
             }
         }
@@ -137,14 +141,14 @@ public class GenerateQuestionsServiceImpl extends AbstractAiGenerationService<Li
     }
 
     private String parseTags(JsonNode questionNode) {
-        if (questionNode.has("tags") && questionNode.get("tags").isArray()) {
+        if (questionNode.has(TAGS_FIELD) && questionNode.get(TAGS_FIELD).isArray()) {
             List<String> tags = new ArrayList<>();
-            for (JsonNode tagNode : questionNode.get("tags")) {
+            for (JsonNode tagNode : questionNode.get(TAGS_FIELD)) {
                 tags.add(tagNode.asText());
             }
             return String.join(",", tags);
         } else {
-            return questionNode.path("tags").asText("");
+            return questionNode.path(TAGS_FIELD).asText("");
         }
     }
 
