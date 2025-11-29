@@ -11,6 +11,10 @@ jobs:
   sonarqube:
     name: SonarQube
     runs-on: windows-latest
+
+    env:
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
     steps:
       - uses: actions/checkout@v4
         with:
